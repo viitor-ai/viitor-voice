@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ViiTor voice · Clone Demo</title>
+  <style>
+    :root {
+      --bg: #f7f8fa;
+      --card: #ffffff;
+      --border: #e5e7eb;
+      --text: #1f2933;
+      --subtext: #4b5563;
+      --accent: #2563eb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Inter", "PingFang SC", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    a { color: inherit; }
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 18px 56px;
+    }
+    header.hero {
+      padding: 22px 20px 10px;
+      border-radius: 10px;
+      background: var(--card);
+      border: 1px solid var(--border);
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--subtext);
+      font-size: 13px;
+      letter-spacing: 0.2px;
+      background: #eef2ff;
+    }
+    .hero h1 {
+      margin: 12px 0 4px;
+      font-size: 30px;
+      letter-spacing: -0.2px;
+    }
+    .hero-actions {
+      margin-top: 16px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .solid-btn {
+      padding: 9px 12px;
+      border-radius: 10px;
+      font-weight: 600;
+      border: 1px solid var(--accent);
+      color: #ffffff;
+      background: var(--accent);
+      text-decoration: none;
+      transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+    }
+    .solid-btn:hover { transform: translateY(-1px); border-color: #1d4ed8; }
+    section.panel {
+      margin-top: 22px;
+      padding: 18px 20px;
+      border-radius: 10px;
+      background: var(--card);
+      border: 1px solid var(--border);
+    }
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .section-title {
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: -0.2px;
+    }
+    .section-desc {
+      margin: 4px 0 0;
+      color: var(--subtext);
+      max-width: 820px;
+      line-height: 1.55;
+    }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .duration-list {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .card {
+      border: 1px solid var(--border);
+      background: var(--card);
+      padding: 12px;
+      border-radius: 10px;
+    }
+    .card h4 {
+      margin: 0 0 4px;
+      font-size: 16px;
+      letter-spacing: -0.1px;
+    }
+    .meta {
+      color: var(--subtext);
+      font-size: 13px;
+      margin: 0 0 8px;
+    }
+    .audio-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 8px 0;
+    }
+    .tag {
+      font-size: 12px;
+      padding: 5px 8px;
+      border-radius: 8px;
+      background: #eef2ff;
+      border: 1px solid #dfe3ec;
+      color: var(--text);
+      white-space: nowrap;
+    }
+    audio {
+      width: 100%;
+      max-width: 100%;
+    }
+    .text {
+      margin: 4px 0 0;
+      color: var(--subtext);
+      line-height: 1.45;
+      font-size: 14px;
+    }
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      margin-top: 12px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 960px;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+      background: #ffffff;
+    }
+    th {
+      color: var(--text);
+      font-weight: 600;
+      background: #f3f4f6;
+    }
+    td {
+      color: var(--subtext);
+      line-height: 1.45;
+      font-size: 14px;
+    }
+    .table-audio {
+      min-width: 220px;
+    }
+    .audio-inline {
+      display: block;
+      width: 100%;
+    }
+    .duration-slider {
+      width: 100%;
+      accent-color: var(--accent);
+      margin: 8px 0 4px;
+    }
+    .duration-value {
+      font-size: 13px;
+      color: var(--accent);
+      margin: 0 0 6px;
+    }
+    .duration-badges {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+    .duration-badges span {
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #f3f4f6;
+      font-size: 12px;
+      color: var(--subtext);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .duration-badges span.active {
+      color: #ffffff;
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    footer {
+      margin-top: 20px;
+      padding: 10px 4px;
+      color: var(--subtext);
+      font-size: 13px;
+      text-align: center;
+    }
+    @media (max-width: 640px) {
+      .hero h1 { font-size: 26px; }
+      .section-head { flex-direction: column; }
+      table { min-width: 760px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <span class="pill">ViiTor voice · Voice Cloning Demo</span>
+      <h1>ViiTor voice · Clone Anywhere</h1>
+      <div class="hero-actions">
+        <a class="solid-btn" href="#bilingual">Listen now</a>
+      </div>
+    </header>
+
+    <section id="duration" class="panel">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">Duration Control · Rhythm Tuning</h2>
+          <p class="section-desc">Adjust duration to control rhythm for different scenarios. Drag the slider or tap tags to switch samples.</p>
+        </div>
+      </div>
+      <div id="duration-cards" class="duration-list"></div>
+    </section>
+
+    <section id="bilingual" class="panel">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">Bilingual Prompts · CN/EN Synthesis</h2>
+          <p class="section-desc">Table shows prompt file, prompt audio, and full Chinese/English text with paired audio for easy side-by-side comparison.</p>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="bilingual-table">
+          <thead>
+            <tr>
+              <th>prompt_audio_name</th>
+              <th>prompt_audio</th>
+              <th>chinese (audio + text)</th>
+              <th>english (audio + text)</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer>Audio source: tts-ap-singapore-1306922583.cos.ap-singapore.myqcloud.com/http_demo/</footer>
+  </div>
+
+  <script>
+    const BASE_URL = "https://tts-ap-singapore-1306922583.cos.ap-singapore.myqcloud.com/http_demo/";
+
+    const bilingualRows = [
+      {
+        promptName: "chs_prompt1_dehua.wav",
+        promptAudio: "prompts/chinese/chs_prompt1_dehua.wav",
+        textChinese: "所以我觉得好的技术,它一定是有温度的,能够真正服务于大家,而不是冷冰冰的摆在那里,就像现在的语音合成技术,越来越自然,越来越贴近人们的需求,这种发展是有生命力的,它就跟当年那些突破性的科技一样,一开始可能觉得很新鲜,但慢慢的,它就融入生活,变成大家离不开的一部分了。",
+        audioChinese: "demos/chs_prompt1_chs.wav",
+        textEnglish: "I think good technology should feel warm and truly serve people, not just sit there like something cold and lifeless. Take speech synthesis, for example, it's getting more natural and closer to what people actually need. That's real progress, something with life in it. It's just like those game-changing technologies from the past, at first, they seemed new and exciting, but before you know it, they become a part of everyday life, something we can't imagine living without.",
+        audioEnglish: "demos/chs_prompt1_en.wav"
+      },
+      {
+        promptName: "chs_prompt2_gaoyuliang.wav",
+        promptAudio: "prompts/chinese/chs_prompt2_gaoyuliang.wav",
+        textChinese: "如果还能算是教训的话,我想说,人可以聪明,但不能聪明到拿自己灵魂做赌注,人可以有欲望,但不能让欲望牵着鼻子走到群众的对立面。",
+        audioChinese: "demos/chs_prompt2_chs.wav",
+        textEnglish: "If my story can count as a lesson, it is this. You may be intelligent, but never so smart that you gamble with your own soul. You may have desires, but you must never let them drag you to stand opposite the people you once swore to serve.",
+        audioEnglish: "demos/chs_prompt2_en.wav"
+      },
+      {
+        promptName: "chs_prompt3_jay.wav",
+        promptAudio: "prompts/chinese/chs_prompt3_jay.wav",
+        textChinese: "我觉得这种运动其实不是说靠机会的,我觉得对每个人来讲,像我们歌手来讲,我觉得其实都是你要自己去努力,然后才可以达到自己的梦想。",
+        audioChinese: "demos/chs_prompt3_chs.wav",
+        textEnglish: "I don't think this kind of sport is about relying on luck. For each of us, especially for singers like us, I believe it's all about putting in the effort yourself. Only then can you reach your dreams.",
+        audioEnglish: "demos/chs_prompt3_en.wav"
+      },
+      {
+        promptName: "chs_prompt4_liyunlong.wav",
+        promptAudio: "prompts/chinese/chs_prompt4_liyunlong.wav",
+        textChinese: "老赵,这仗不好打,可咱八路就认一个死理,枪压着也得顶上去,打不赢对不起老百姓,更对不起咱身上这身军装。",
+        audioChinese: "demos/chs_prompt4_chs.wav",
+        textEnglish: "Zhao, this battle won't be easy, but we Eighth Route soldiers stick to one thing, even with enemy guns pressing us down, we push forward. If we don't win, we'll fail the common people, and this uniform on our backs.",
+        audioEnglish: "demos/chs_prompt4_en.wav"
+      },
+      {
+        promptName: "chs_prompt5_child.wav",
+        promptAudio: "prompts/chinese/chs_prompt5_child.wav",
+        textChinese: "爸爸,如果我一直一直不睡觉,是不是就能偷偷看到太阳和月亮换班开会,它们会不会在天上一起喝牛奶聊天呀。",
+        audioChinese: "demos/chs_prompt5_chs.wav",
+        textEnglish: "Dad, if I just never ever go to sleep, could I secretly see the sun and the moon having a shift-change meeting? Do you think they drink milk together and chat up in the sky?",
+        audioEnglish: "demos/chs_prompt5_en.wav"
+      },
+      {
+        promptName: "chs_prompt6_tangseng.wav",
+        promptAudio: "prompts/chinese/chs_prompt6_tangseng.wav",
+        textChinese: "佛祖您老人家,日日讲慈悲,可却让我师徒四人,一路妖魔不断,生灵涂炭,这般试炼,如何叫凡夫俗子信服。",
+        audioChinese: "demos/chs_prompt6_chs.wav",
+        textEnglish: "Buddha, you always preach compassion day after day, yet you let the four of us master and disciples face demons at every turn, and leave living beings in misery along the way. With trials like this, how can ordinary folk be convinced?",
+        audioEnglish: "demos/chs_prompt6_en.wav"
+      },
+      {
+        promptName: "en_prompt1_trump.wav",
+        promptAudio: "prompts/english/en_prompt1_trump.wav",
+        textChinese: "我们知道技术发展很快,但人工智能的发展更为迅速,它已经在改变我们的生活,从我们的工作和联系方式,到我们如何应对世界上最大的挑战。",
+        audioChinese: "demos/en_prompt1_chs.wav",
+        textEnglish: "We know technology is advancing quickly, but AI is moving even faster. It's already transforming our lives,  from the way we work and stay connected, to how we tackle some of the world's biggest challenges.",
+        audioEnglish: "demos/en_prompt1_en.wav"
+      },
+      {
+        promptName: "en_prompt2_seedtts.wav",
+        promptAudio: "prompts/english/en_prompt2_seedtts.wav",
+        textChinese: "我一点也不在乎你怎么称呼我,我一直只是个沉默的旁观者,看着物种更迭进化,看着帝国兴起又覆灭,但你要记住,我强大而长存,敬畏我,我会滋养你,无视我,你终将为此付出代价。",
+        audioChinese: "demos/en_prompt2_chs.wav",
+        textEnglish: "I don't really care what you call me. I've been a silent spectator, watching species evolve, empires rise and fall. But always remember, I am mighty and enduring. Respect me and I'll nurture you, ignore me and you shall face the consequences.",
+        audioEnglish: "demos/en_prompt2_en.wav"
+      },
+      {
+        promptName: "en_prompt3_seedvc.wav",
+        promptAudio: "prompts/english/en_prompt3_seedvc.wav",
+        textChinese: "那就紧跟着我,别说话,也别乱跑,要是他们在我抹掉你踪迹之前闻到你的气味,就算是首领也救不了你。",
+        audioChinese: "demos/en_prompt3_chs.wav",
+        textEnglish: "Then stick close, don't speak, and don't run. If they catch your scent before I erase your trail, not even the Alpha can save you.",
+        audioEnglish: "demos/en_prompt3_en.wav"
+      },
+      {
+        promptName: "en_prompt4_zhongli.wav",
+        promptAudio: "prompts/english/en_prompt4_zhongli.wav",
+        textChinese: "不同的口感与风味相互交织,形成了完美的和谐,多汁的牛排,酸涩的蔓越莓,松子带来的酥脆口感,以及蓝纹奶酪的绵密醇厚,共同造就了一道真正令人垂涎的美味,祝你享受这场美妙的味蕾之旅。",
+        audioChinese: "demos/en_prompt4_chs.wav",
+        textEnglish: "The combinations of different textures and flavors create a perfect harmony. The succulence of the steak, the tartness of the cranberries, the crunch of pine nuts, and creaminess of blue cheese make it a truly delectable delight. Enjoy your culinary adventure!",
+        audioEnglish: "demos/en_prompt4_en.wav"
+      },
+      {
+        promptName: "en_prompt5_asmr.wav",
+        promptAudio: "prompts/english/en_prompt5_asmr.wav",
+        textChinese: "想尝尝我的嘴唇吗,那就靠近点,再近一点,我又不咬人。",
+        audioChinese: "demos/en_prompt5_chs.wav",
+        textEnglish: "Wanna taste my lip. Then come closer. Closer than that. I don't bite.",
+        audioEnglish: "demos/en_prompt5_en.wav"
+      }
+    ];
+
+    const durationDemos = [
+      {
+        key: "dur-chs",
+        title: "Chinese · Rhythm control (Prompt 2)",
+        promptAudio: "prompts/chinese/chs_prompt2_gaoyuliang.wav",
+        text: "人可以聪明,但不能聪明到拿自己灵魂做赌注,人可以有欲望,但不能让欲望牵着鼻子走到群众的对立面。",
+        options: [
+          { label: "duration=4", audio: "demos/chs_prompt2_dur4.wav" },
+          { label: "duration=5", audio: "demos/chs_prompt2_dur5.wav" },
+          { label: "duration=6", audio: "demos/chs_prompt2_dur6.wav" },
+          { label: "duration=7", audio: "demos/chs_prompt2_dur7.wav" },
+          { label: "duration=8", audio: "demos/chs_prompt2_dur8.wav" },
+          { label: "duration=9", audio: "demos/chs_prompt2_dur9.wav" },
+          { label: "duration=10", audio: "demos/chs_prompt2_dur10.wav" }
+        ]
+      },
+      {
+        key: "dur-en",
+        title: "English · Rhythm control (Prompt 4)",
+        promptAudio: "prompts/english/en_prompt4_zhongli.wav",
+        text: "The combinations of different textures and flavors create a perfect harmony. The succulence of the steak, the tartness of the cranberries, the crunch of pine nuts, and creaminess of blue cheese make it a truly delectable delight. Enjoy your culinary adventure!",
+        options: [
+          { label: "duration=8", audio: "demos/en_prompt4_dur8.wav" },
+          { label: "duration=10", audio: "demos/en_prompt4_dur10.wav" },
+          { label: "duration=11", audio: "demos/en_prompt4_dur11.wav" },
+          { label: "duration=12", audio: "demos/en_prompt4_dur12.wav" },
+          { label: "duration=13", audio: "demos/en_prompt4_dur13.wav" },
+          { label: "duration=15", audio: "demos/en_prompt4_dur15.wav" },
+          { label: "duration=18", audio: "demos/en_prompt4_dur18.wav" }
+        ]
+      }
+    ];
+
+    const renderTable = () => {
+      const tbody = document.querySelector("#bilingual-table tbody");
+      tbody.innerHTML = bilingualRows.map(row => `
+        <tr>
+          <td>${row.promptName}</td>
+          <td class="table-audio"><audio class="audio-inline" controls src="${BASE_URL + row.promptAudio}"></audio></td>
+          <td>
+            <div class="table-audio"><audio class="audio-inline" controls src="${BASE_URL + row.audioChinese}"></audio></div>
+            <div>${row.textChinese}</div>
+          </td>
+          <td>
+            <div class="table-audio"><audio class="audio-inline" controls src="${BASE_URL + row.audioEnglish}"></audio></div>
+            <div>${row.textEnglish}</div>
+          </td>
+        </tr>
+      `).join("");
+    };
+
+    const buildDurationCard = (demo) => `
+      <div class="card duration-card" data-key="${demo.key}">
+        <h4>${demo.title}</h4>
+        <p class="meta">Prompt: ${demo.promptAudio.split("/").pop()}</p>
+        <div class="audio-row">
+          <span class="tag">Prompt</span>
+          <audio controls src="${BASE_URL + demo.promptAudio}"></audio>
+        </div>
+        <p class="text">${demo.text}</p>
+        <p class="duration-value">Current: ${demo.options[0].label}</p>
+        <input type="range" min="0" max="${demo.options.length - 1}" value="0" step="1" class="duration-slider" data-key="${demo.key}">
+        <div class="duration-badges">
+          ${demo.options.map((opt, idx) => `<span data-index="${idx}" ${idx === 0 ? 'class="active"' : ""}>${opt.label}</span>`).join("")}
+        </div>
+        <div class="audio-row">
+          <span class="tag">Synthesis</span>
+          <audio controls data-key="${demo.key}" src="${BASE_URL + demo.options[0].audio}"></audio>
+        </div>
+      </div>
+    `;
+
+    const durationLookup = Object.fromEntries(durationDemos.map(d => [d.key, d.options]));
+
+    const attachDurationHandlers = () => {
+      document.querySelectorAll(".duration-card").forEach(card => {
+        const key = card.dataset.key;
+        const slider = card.querySelector(".duration-slider");
+        const valueLabel = card.querySelector(".duration-value");
+        const audio = card.querySelector(`audio[data-key="${key}"]`);
+        const badges = Array.from(card.querySelectorAll(".duration-badges span"));
+        const options = durationLookup[key] || [];
+
+        const update = (index) => {
+          const opt = options[index];
+          if (!opt) return;
+          audio.src = BASE_URL + opt.audio;
+          valueLabel.textContent = `Current: ${opt.label}`;
+          badges.forEach((badge, i) => badge.classList.toggle("active", i === index));
+        };
+
+        slider.addEventListener("input", (e) => update(parseInt(e.target.value, 10)));
+        badges.forEach(badge => badge.addEventListener("click", () => {
+          const idx = parseInt(badge.dataset.index, 10);
+          slider.value = idx;
+          update(idx);
+        }));
+      });
+    };
+
+    renderTable();
+    document.getElementById("duration-cards").innerHTML = durationDemos.map(buildDurationCard).join("");
+    attachDurationHandlers();
+  </script>
+</body>
+</html>

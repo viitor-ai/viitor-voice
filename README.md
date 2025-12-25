@@ -1,146 +1,142 @@
-# <center>ViiTor-Voice</center>
-### <center>An LLM based TTS Engine</center>
+<h1 align="center">🚀 ViiTor Voice TTS</h1>
+<p align="center">Fast, flexible speech cloning with transformers or vLLM — batch-friendly and duration-aware.</p>
+<p align="center"><a href="README_zh.md">中文文档</a></p>
 
-<p align="center">
-  <img src="asserts/post_1.png" alt="Viitor-Voice Cover">
-</p>
+## 🍀 What it is
+ViiTor Voice is a three-stage speech cloning stack:
+- Stage 1: prompt + text → semantic tokens.
+- Stage 2: prompt acoustic/semantic + predicted semantic → predicted acoustic tokens.
+- Stage 3: acoustic tokens → waveform.
 
-## Update
-- **2024.12.14**:
-  - [demo](https://huggingface.co/spaces/ZzWater/viitor-voice)
-  - Adjusted model input by removing speaker embeddings (we found that existing open-source speaker models struggle to capture speaker characteristics effectively and have limited generalization capabilities).
-  - Supports zero-shot voice cloning.
-  - Supports both Chinese and English languages.
-  
-## Features
+## ✨ Why it shines
+- **Text-free prompts**: stronger cross-lingual cloning, less ASR dependency—raw prompts are welcome.
+- **Similarity boost**: InfoNCE + condition encoder as a similarity constraint; robust even with noisy/background prompts.
+- **Built-in duration control**: duration prediction in the LLM trunk; force duration with ~0.5s precision.
+- **LoRA-based emotion control**: plug in LoRA adapters to steer emotion/style without full finetuning.
 
-- **Lightweight Design**  
+`cli.py` covers both backends, two batch modes, and an optional duration hint (single-text only).
 
-  The model is simple and efficient, compatible with most LLM inference engines. With only 0.5B parameters, it achieves extreme optimization of computational resources while maintaining high performance. This design allows the model to be deployed not only on servers but also on mobile devices and edge computing environments, meeting diverse deployment needs.
+## ⚡ Quickstart (Linux)
+### 1) Environment
+Use the provided script (PyTorch, vLLM 0.12.0 CUDA 12.8, requirements, dualcodec):
+```
+bash create_env.sh
+source .venv/bin/activate
+```
+Notes:
+- `create_env.sh` uses `uv venv` with Python 3.12—adjust if needed.
+- vLLM install targets CUDA 12.8 (`--torch-backend=cu128`); adapt to your CUDA/toolkit.
 
-- **Real-time Streaming Output, Low Latency Experience**  
+### 2) Checkpoints
+Fetch required models (Hugging Face mirror by default):
+```
+bash download_checkpoints.sh
+```
+Default paths (override via CLI if you store elsewhere):
+- SoundStorm: `checkpoints/viitor/soundstorm`
+- DualCodec:  `checkpoints/dualcodec`
+- wav2vec:    `checkpoints/w2v`
+- LLM:        `checkpoints/viitor/llm/zh-en`
 
-  The model supports real-time speech generation, suitable for applications that demand low latency. On the Tesla T4 platform, it achieves an industry-leading first-frame latency of 200ms, providing users with nearly imperceptible instant feedback, ideal for interactive applications requiring quick response.
+## 🎯 Demo usage
+### 🖥️ Gradio demo
+Launch a web UI (hosted on `0.0.0.0`, Gradio share disabled):
+```
+python gradio_demo.py \
+  --soundstorm-model-path checkpoints/viitor/soundstorm \
+  --dualcodec-model-path checkpoints/dualcodec \
+  --w2v-path checkpoints/w2v \
+  --llm-model-path checkpoints/viitor/llm/zh-en \
+  --server-port 7860
+```
+Upload a prompt audio file in the UI, type text, optionally set a duration (seconds), then click “Synthesize” to preview the generated audio.
+Toggle “Enable two-pass speaker refinement (prompt + generated speech)” to reduce accent leakage; helpful for cross-language cloning when you want lighter source accent.
 
-- **Rich Voice Library**  
+### 💻 CLI demo
+Base command (transformers backend + default checkpoints):
+```
+python cli.py \
+  --prompt /path/to/prompt.wav \
+  --text "Hello ViiTorVoice!" \
+  --output outputs/out.wav
+```
+Common flags:
+- `--use-vllm` switch to vLLM.
+- `--duration <seconds>` duration hint; honored only when exactly one text.
+- `--speaker-windowed` enable two-pass speaker refinement (average prompt embedding with generated-speech embedding; reduces accent leakage, useful for cross-language cloning).
 
-  Offers more than 300 different voice options, allowing you to choose the most suitable speech style according to your needs and preferences. Whether it’s a formal business presentation or casual entertainment content, the model provides perfect voice matching.
-
-- **Flexible Speech Rate Adjustment**  
-
-  The model supports natural variations in speech rate, allowing users to easily adjust it based on content requirements and audience preferences. Whether speeding up for efficient information delivery or slowing down to enhance emotional depth, it maintains natural speech fluency.
-
-- **Zero-shot Voice Cloning (Under Research)**  
-
-  Decoder-only architecture naturally supports Zero-shot cloning, with future support for rapid voice cloning based on minimal voice samples.
-
----
-
-## Environment Setup
-
-```commandline
-git clone https://github.com/viitor-ai/viitor-voice.git
-cd viitor-voice
-conda create -n viitor_voice python=3.10
-conda activate viitor_voice
-pip install -r requirements.txt
-
-### Due to the issue with vllm's tokenizer length calculation, the token limit cannot take effect.
-python_package_path=`pip show pip | egrep Location | awk -F ' ' '{print $2}'`
-cp viitor_voice/utils/patch.py $python_package_path/vllm/entrypoints/openai/logits_processors.py
+### 🧪 Cases
+1) Single inference (transformers)
+```
+python cli.py \
+  --prompt data/prompt.wav \
+  --text "Welcome to ViiTorVoice." \
+  --output outputs/single.wav
 ```
 
----
-
-## Inference
-### Pretrained Models
-- ~~[English](https://huggingface.co/ZzWater/viitor-voice-en)~~(deprecated)
-- ~~[Chinese](https://huggingface.co/ZzWater/viitor-voice-chs)~~(deprecated)
-- [Chinese & English](https://huggingface.co/ZzWater/viitor-voice-mix)
-### Offline Inference
-
-**For GPU users**
-```python
-from viitor_voice.inference.vllm_engine import VllmEngine
-import torchaudio
-
-tts_engine = VllmEngine(model_path="ZzWater/viitor-voice-mix")
-
-## chinese example
-ref_audio = "reference_samples/reference_samples/chinese_female.wav"
-ref_text = "博士,您工作辛苦了!"
-text_list = ["我觉得我还能抢救一下的!", "我…我才不要和你一起!"]
-audios = tts_engine.batch_infer(text_list, ref_audio, ref_text)
-for i, audio in enumerate(audios):
-    torchaudio.save('test_chinese_{}.wav'.format(i), audios[0], 24000)
-
-
-# english example
-ref_audio = "reference_samples/reference_samples/english_female.wav"
-ref_text = "At dinner, he informed me that he was a trouble shooter for a huge international organization."
-text_list = ["Working overtime feels like running a marathon with no finish line in sight—just endless tasks and a growing sense that my life is being lived in the office instead of the real world."]
-audios = tts_engine.batch_infer(text_list, ref_audio, ref_text)
-for i, audio in enumerate(audios):
-    torchaudio.save('test_english_{}.wav'.format(i), audios[0], 24000)    
-
+2) vLLM backend
 ```
-**For CPU users**
-```python
-from viitor_voice.inference.transformers_engine import TransformersEngine
-import torchaudio
-
-tts_engine = TransformersEngine(model_path="ZzWater/viitor-voice-mix", device='cpu')
-
-## chinese example
-ref_audio = "reference_samples/reference_samples/chinese_female.wav"
-ref_text = "博士,您工作辛苦了!"
-text_list = ["我觉得我还能抢救一下的!", "我…我才不要和你一起!"]
-audios = tts_engine.batch_infer(text_list, ref_audio, ref_text)
-for i, audio in enumerate(audios):
-    torchaudio.save('test_chinese_{}.wav'.format(i), audios[0], 24000)
-
-
-# english example
-ref_audio = "reference_samples/reference_samples/english_female.wav"
-ref_text = "At dinner, he informed me that he was a trouble shooter for a huge international organization."
-text_list = [" Working overtime feels like running a marathon with no finish line in sight", " Just endless tasks and a growing sense that my life is being lived in the office instead of the real world."]
-audios = tts_engine.batch_infer(text_list, ref_audio, ref_text)
-for i, audio in enumerate(audios):
-    torchaudio.save('test_english_{}.wav'.format(i), audios[0], 24000)    
-
-```
-### Gradio Demo
-```bash
-python gradio_demo.py
+python cli.py \
+  --use-vllm \
+  --prompt data/prompt.wav \
+  --text "This runs with vLLM." \
+  --output outputs/vllm.wav
 ```
 
-### Demo Inference
-- [ViiTor AI](https://www.viitor.io/text-to-speech)
-### Streaming Inference (TODO)
+3) Duration hint (single text)
+```
+python cli.py \
+  --prompt data/prompt.wav \
+  --text "Keep this around three seconds." \
+  --duration 3.0 \
+  --output outputs/with_duration.wav
+```
 
----
-## Training
-- [example](./train_example.md)
-## Join Our Community
-[![Join Discord](https://img.shields.io/discord/your-discord-id?logo=discord&style=for-the-badge)](https://discord.gg/MbxgFn7BN8)
+4) Batch: prompts and texts 1:1
+```
+python cli.py \
+  --prompt data/p1.wav data/p2.wav \
+  --text "First line" "Second line" \
+  --output outputs/pair_batch/
+```
+Paired by order; outputs auto-named in the directory.
 
-Have questions about the project? Want to discuss new features, report bugs, or just chat with other contributors? Join our Discord community!
-## References
+5) Batch: one prompt, many texts
+```
+python cli.py \
+  --prompt data/prompt.wav \
+  --text "Line 1" "Line 2" "Line 3" \
+  --output outputs/multi_text_batch/
+```
+Generates multiple files, auto-named `000_prompt_t0.wav`, etc.
 
-- [SNAC](https://github.com/hubertsiuzdak/snac)
-- [mini-omni](https://github.com/gpt-omni/mini-omni)
-- [open-gpt-4-o](https://laion.ai/notes/open-gpt-4-o/)
-- [Qwen](https://huggingface.co/Qwen/Qwen2-0.5B)
-- [cosyvoice](https://huggingface.co/FunAudioLLM/CosyVoice-300M)
+### 📣 Output log
+```
+Saved -> path | text='...' | prompt='...' | set/predicted duration=3.00s | actual duration=2.95s
+```
+- `set/predicted duration`: provided duration (or model-predicted if none)
+- `actual duration`: measured from generated audio
 
-## License
+## 🧭 Tips
+- Ensure CUDA driver/toolkit matches the PyTorch/vLLM build; edit `create_env.sh` if you need a different CUDA wheel.
+- vLLM prefers generous GPU memory; fall back to transformers if constrained.
+- Set duration hints reasonably; extreme values can produce abnormal audio.
 
-This project is licensed under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/).  
-You are free to share and modify the code of this project for non-commercial purposes, under the following conditions:
+## 📌 TODO
+- ✅ Open-sourced Chinese/English base model
+- ✅ Inference code (this repo and demo)
+- ⏳ SoundStorm training recipe
+- ⏳ LLM training recipe
+- ✅ Gradio demo
+- ⏳ Emotion-control LoRA
+- ⏳ Japanese, Korean, Cantonese model weights
+- ⏳ Flow matching–based semantic-to-wav module
 
-1. **Attribution**: You must give appropriate credit, provide a link to the license, and indicate if changes were made.
-2. **Non-Commercial**: You may not use the material for commercial purposes.
+## 🙌 Acknowledgments
+- [CosyVoice](https://github.com/FunAudioLLM/CosyVoice)
+- [Amphion](https://github.com/open-mmlab/Amphion)
+- [soundstorm-pytorch](https://github.com/lucidrains/soundstorm-pytorch)
+- [IndexTTS](https://github.com/index-tts/index-tts)
 
-**Copyright Notice:**  
-© 2024 Livedata. All Rights Reserved.
-
+## 🌟 Product
+Official site: [ViiTor AI](https://www.viitor.com/)
