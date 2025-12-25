@@ -1,6 +1,6 @@
 <h1 align="center">🚀 ViiTor Voice TTS</h1>
 <p align="center">基于 transformers 与 vLLM 的快速灵活语音克隆，支持批量与时长控制。</p>
-<p align="center"><a href="README.md">English</a></p>
+<p align="center"><a href="README.md">English</a> · <a href="https://viitor-ai.github.io/viitor-voice/">在线 Demo</a> · <a href="https://github.com/viitor-ai/viitor-voice/">GitHub</a> · <a href="https://huggingface.co/ZzWater/ViiTor-voice-2.0-base">Hugging Face</a></p>
 
 ## 🍀 方案简介
 ViiTor Voice 是一个三阶段语音克隆流程：

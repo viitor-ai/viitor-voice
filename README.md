@@ -1,6 +1,6 @@
 <h1 align="center">🚀 ViiTor Voice TTS</h1>
 <p align="center">Fast, flexible speech cloning with transformers or vLLM — batch-friendly and duration-aware.</p>
-<p align="center"><a href="README_zh.md">中文文档</a></p>
+<p align="center"><a href="README_zh.md">中文文档</a> · <a href="https://viitor-ai.github.io/viitor-voice/">Demo page</a> · <a href="https://github.com/viitor-ai/viitor-voice/">GitHub</a> · <a href="https://huggingface.co/ZzWater/ViiTor-voice-2.0-base">Hugging Face</a></p>
 
 ## 🍀 What it is
 ViiTor Voice is a three-stage speech cloning stack:
